@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER_MARKET | NEO-RUSSIA</title>
+    <style>
+        :root {
+            --bg-black: #020205;
+            --neon-blue: #00f2ff;
+            --dark-blue: #003547;
+            --cyber-pink: #ff0055; /* 포인트 컬러 */
+            --text-main: #bdefff;
+            --steel: rgba(190, 235, 255, 0.14);
+            --panel: rgba(0, 12, 18, 0.72);
+        }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Consolas', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Scanline Overlay (사이버펑크 감성) */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+            linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 30px;
+            background: rgba(0, 5, 10, 0.95);
+            border-bottom: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--dark-blue);
+            gap: 12px;
+        }
+
+        .top-info {
+            display: flex;
+            gap: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--neon-blue);
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .top-info span {
+            white-space: nowrap;
+            opacity: 0.92;
+        }
+
+        .login-btn {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 6px 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            flex: 0 0 auto;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .login-btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        /* Top bar responsive */
+        @media (max-width: 760px) {
+            .top-bar {
+                padding: 10px 14px;
+                align-items: flex-start;
+            }
+
+            .top-info {
+                gap: 10px 14px;
+                font-size: 0.76rem;
+                line-height: 1.25;
+                flex: 1 1 auto;
+            }
+
+            .login-btn {
+                padding: 6px 12px;
+                font-size: 0.78rem;
+            }
+        }
+
+        @media (max-width: 460px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .top-info {
+                justify-content: space-between;
+            }
+
+            /* 가장 좁을 때는 중요도 낮은 항목 숨김 */
+            .top-info span:nth-child(1),
+            .top-info span:nth-child(2) {
+                display: none;
+            }
+
+            .login-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Compact Banner */
+        .banner {
+            height: 250px; /* 길이를 짧게 조절 */
+            background: linear-gradient(45deg, rgba(2, 2, 5, 0.9), rgba(0, 53, 71, 0.4)),
+            url('https://images.contentstack.io/v3/assets/bltb6530b2711d52415/blt56561f5139036c05/659ef3b603887c040a4fa20c/VALORANT_E8A1_Evori_Dreamwings_Banner.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 50px;
+            border-bottom: 1px solid var(--dark-blue);
+        }
+
+        .banner h1 {
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* Section 1: Card Slider */
+        .section-1 {
+            padding: 40px 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px; /* 화살표-카드 갭 줄이기 */
+            padding: 0 18px;
+        }
+
+        .slider-viewport {
+            width: min(980px, calc(100vw - 120px));
+            overflow: hidden;
+            position: relative;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .market-stamp {
+            position: absolute;
+            inset: 10px 12px auto auto;
+            z-index: 6;
+            font-family: 'Courier New', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            color: rgba(0, 242, 255, 0.9);
+            border: 1px dashed rgba(0, 242, 255, 0.35);
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.25);
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.35);
+            pointer-events: none;
+        }
+
+        .card-container {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        .card {
+            min-width: 320px;
+            height: 420px;
+            background: var(--panel);
+            border: 1px solid rgba(0, 242, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+            opacity: 0.3;
+            transform: scale(0.85);
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 카드 내 조명 효과 */
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(0, 242, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        /* 카드 상/하단 네온 라인 + 글로우 */
+        .card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.75), transparent) top/100% 2px no-repeat,
+                linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.75), transparent) bottom/100% 2px no-repeat,
+                radial-gradient(70% 12px at 50% 0%, rgba(0, 242, 255, 0.35), transparent 70%) top/100% 28px no-repeat,
+                radial-gradient(70% 12px at 50% 100%, rgba(0, 242, 255, 0.35), transparent 70%) bottom/100% 28px no-repeat;
+            opacity: 0.55;
+            filter: blur(0.2px);
+        }
+
+        .card.active {
+            opacity: 1;
+            transform: scale(1.1);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.4), inset 0 0 20px rgba(0, 242, 255, 0.1);
+            z-index: 5;
+        }
+
+        .card.active::after {
+            opacity: 1;
+        }
+
+        .card .weapon-img {
+            width: 88%;
+            height: 230px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 14px rgba(0, 242, 255, 0.18));
+            margin-top: 6px;
+        }
+
+        .card .meta {
+            width: 90%;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .card h3 {
+            color: #fff;
+            text-shadow: 0 0 5px var(--neon-blue);
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 0.08em;
+        }
+
+        .card .tag {
+            font-family: 'Courier New', monospace;
+            font-size: 0.78rem;
+            color: rgba(0, 242, 255, 0.85);
+            border: 1px solid rgba(0, 242, 255, 0.18);
+            padding: 3px 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .card .price {
+            width: 90%;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+        }
+
+        .card .price .rub {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.25);
+        }
+
+        .card .price .risk {
+            color: rgba(255, 0, 85, 0.9);
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.08em;
+        }
+
+        /* Arrows on Sides */
+        .arrow {
+            position: static;
+            transform: none;
+            background: rgba(0, 242, 255, 0.08);
+            border: 1px solid rgba(0, 242, 255, 0.55);
+            color: var(--neon-blue);
+            width: 44px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 1.5rem;
+            transition: 0.3s;
+            backdrop-filter: blur(6px);
+            flex: 0 0 auto;
+        }
+
+        .arrow:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        /* arrow-left/right는 클래스만 유지 (공통 스타일 사용) */
+
+        @media (max-width: 900px) {
+            .slider-viewport { width: calc(100vw - 86px); }
+            .arrow { width: 38px; height: 56px; }
+            .slider-wrapper { gap: 8px; padding: 0 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="top-info">
+        <span>[ SETTINGS ]</span>
+        <span>[ PROFILE ]</span>
+        <span>[ AUTH_CODE: <b style="color:var(--cyber-pink)">77-X92</b> ]</span>
+    </div>
+    <a class="login-btn" href="/login">CONNECT_ID</a>
+</div>
+
+<div class="banner">
+    <div>
+        <p style="color: var(--cyber-pink); font-weight: bold;">// NEW DROP AVAILABLE</p>
+        <h1>EVORI DREAMWINGS</h1>
+    </div>
+</div>
+
+<div class="section-1">
+    <div class="slider-wrapper">
+        <div class="arrow arrow-left" onclick="move(-1)">◀</div>
+
+        <div class="slider-viewport">
+            <div class="card-container" id="cardContainer">
+                <div class="card">
+                    <img class="weapon-img" alt="VALORANT Sheriff" src="image.png" />
+                    <div class="meta">
+                        <h3>SHERIFF</h3>
+                        <span class="tag">SIDEARM</span>
+                    </div>
+                    <div class="price">
+                        <span class="rub">₽ 800</span>
+                        <span class="risk">RISK: LOW</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <img class="weapon-img" alt="VALORANT Spectre" src="image.png" />
+                    <div class="meta">
+                        <h3>SPECTRE</h3>
+                        <span class="tag">SMG</span>
+                    </div>
+                    <div class="price">
+                        <span class="rub">₽ 1,600</span>
+                        <span class="risk">RISK: MED</span>
+                    </div>
+                </div>
+
+                <div class="card active">
+                    <img class="weapon-img" alt="VALORANT Vandal" src="image.png" />
+                    <div class="meta">
+                        <h3>VANDAL</h3>
+                        <span class="tag">RIFLE</span>
+                    </div>
+                    <div class="price">
+                        <span class="rub">₽ 2,900</span>
+                        <span class="risk">RISK: HIGH</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <img class="weapon-img" alt="VALORANT Phantom" src="image.png" />
+                    <div class="meta">
+                        <h3>PHANTOM</h3>
+                        <span class="tag">RIFLE</span>
+                    </div>
+                    <div class="price">
+                        <span class="rub">₽ 2,900</span>
+                        <span class="risk">RISK: HIGH</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <img class="weapon-img" alt="VALORANT Operator" src="image.png" />
+                    <div class="meta">
+                        <h3>OPERATOR</h3>
+                        <span class="tag">SNIPER</span>
+                    </div>
+                    <div class="price">
+                        <span class="rub">₽ 4,700</span>
+                        <span class="risk">RISK: EXT</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow arrow-right" onclick="move(1)">▶</div>
+    </div>
+</div>
+
+<script>
+    let currentIndex = 2; // 중앙 카드 인덱스
+    const container = document.getElementById('cardContainer');
+    const cards = Array.from(document.querySelectorAll('.card'));
+    const totalCards = cards.length;
+    let pointerDownX = null;
+    let pointerActive = false;
+
+    function move(step) {
+        setActiveIndex(currentIndex + step);
+    }
+
+    function setActiveIndex(nextIndex) {
+        if (!cards.length) return;
+
+        cards[currentIndex]?.classList.remove('active');
+
+        // 전전 코드 느낌(단순) 유지 + 끝에서 이어지는 무한 루프
+        currentIndex = (nextIndex + totalCards) % totalCards;
+
+        cards[currentIndex]?.classList.add('active');
+        updateSlider();
+    }
+
+    function updateSlider() {
+        if (!cards.length) return;
+
+        const viewport = container.closest('.slider-viewport') || container.parentElement;
+        const target = cards[currentIndex];
+        if (!target || !viewport) return;
+
+        // 현재 카드의 "실제 위치" 기준으로 중앙 정렬 (스케일/갭 변화에도 안정적)
+        const viewportCenter = viewport.clientWidth / 2;
+        const cardCenter = target.offsetLeft + target.offsetWidth / 2;
+        const translateX = viewportCenter - cardCenter;
+
+        container.style.transform = `translateX(${translateX}px)`;
+    }
+
+    // 카드 클릭하면 그 카드로 이동
+    cards.forEach((card, idx) => {
+        card.addEventListener('click', () => setActiveIndex(idx));
+    });
+
+    // 키보드 좌우 화살표 지원
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') move(-1);
+        if (e.key === 'ArrowRight') move(1);
+    });
+
+    // 스와이프(터치/마우스) 지원: 카드만 이동
+    const viewportEl = container.closest('.slider-viewport') || container.parentElement;
+    if (viewportEl) {
+        viewportEl.addEventListener('pointerdown', (e) => {
+            pointerDownX = e.clientX;
+            pointerActive = true;
+        });
+
+        viewportEl.addEventListener('pointerup', (e) => {
+            if (!pointerActive || pointerDownX == null) return;
+            const dx = e.clientX - pointerDownX;
+            pointerActive = false;
+            pointerDownX = null;
+            if (Math.abs(dx) < 35) return;
+            move(dx > 0 ? -1 : 1);
+        });
+
+        viewportEl.addEventListener('pointercancel', () => {
+            pointerActive = false;
+            pointerDownX = null;
+        });
+    }
+
+    // 초기 위치 설정
+    window.onload = updateSlider;
+    window.onresize = updateSlider;
+</script>
+
+</body>
+</html>
